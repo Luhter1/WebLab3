@@ -1,0 +1,73 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Pixelify Sans", sans-serif;
+ }
+
+ body {
+    height: 100vh;
+    background-color: #c3ffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+ }
+
+ header {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 10px;
+    text-align: center;
+    background-color: #8dffff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+ }
+
+ header h1 {
+    color: #333;
+    font-size: 1.5rem;
+ }
+
+ .credits, .group, .id {
+    font-weight: bold;
+    margin-left: 1rem;
+    margin-right: 1rem;
+ }
+
+ .time {
+    grid-row: 3;
+    grid-column: 2;
+    font-size: 1.2rem;
+    padding-top: 0.6rem;
+    color: #f07d7d;
+    font-weight: bold;
+ }
+
+ .time span {
+    display: inline-block;
+    padding: 5px 10px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+ }
+
+ .link-to-main-page {
+    grid-row: 3;
+    grid-column: 3;
+    padding: 10px 20px;
+    background-color: #1bbaba;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s ease;
+    text-align: center;
+ }
+
+ .link-to-main-page:hover {
+    background-color: #008181;
+ }

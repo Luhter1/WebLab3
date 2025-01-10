@@ -1,0 +1,212 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Pixelify Sans", sans-serif;
+}
+
+body {
+    background-color: #c3ffff;
+}
+
+
+main {
+    display: grid;
+    height: 60%;
+    grid-template-columns: auto auto;
+
+}
+
+/* график */
+.canvasContainer {
+    width: 400px;
+    height: 400px;
+    display: grid;
+    place-content: center;
+    place-items: center;
+    grid-template-rows: 25% 50%;
+    font-size: 20px;
+    position: relative;
+}
+
+canvas {
+    border: black solid;
+}
+
+#canvas{
+    width: 100%;
+    height: 100%;
+    top:0;
+    left:0;
+    z-index: 0;
+    position: absolute;
+}
+
+#pointsCanvas{
+    z-index: 1;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top:0;
+    left:0;
+    pointer-events: none;
+}
+
+.greatCanvas{
+    display: flex;
+    align-items: center;
+    place-content: center;
+}
+
+/* блок переменных */
+
+.variables {
+    margin-top: 10%;
+    margin-left: 10%;
+    font-size: 20px;
+    background-color: #8dffff;
+    height: 60%;
+    width: 100%;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 10px;
+    border: black solid;
+    border-width: 2px;
+}
+
+.form {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    place-content: center;
+    grid-template-columns: 30% 40% 30%;
+    place-items: center;
+    font-size: 100%;
+}
+
+.submitButton{
+    grid-row: 2;
+    grid-column: 2;
+    border-width: 0;
+    background-color: #1bbaba;
+    color: #fff;
+    font-size: 1rem;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: bold;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+.submitButton:hover {
+    background-color: #008181;
+}
+
+.form p {
+    font-size: 20px;
+    text-align: center
+}
+
+.form input {
+    font-size: 15px;
+    margin: 5px;
+    padding: 5px 10px;
+}
+
+form > button {
+    width: 100%;
+}
+
+.r{
+    margin-left: 2px;
+    margin-right: 2px;
+    text-decoration: none;
+    transition: none;
+    color: black;
+}
+
+#yVar{
+    width: 50%;
+}
+
+
+footer {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    justify-items: center;
+}
+
+.tableCorner {
+    width: 450px;
+    height: 200px;
+    overflow: scroll;
+}
+
+
+td, tr {
+    opacity: 0;
+    animation: ani 1s forwards;
+    padding: 0;
+    text-align: center;
+    height: 70px;
+    border: solid black;
+    border-radius: 4px;
+    transition: ease-in-out .2s;
+
+}
+
+.rVar td{
+    border: none;
+}
+
+
+.tableContainer {
+    display: none;
+    height: fit-content;
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+.tableContainer::-webkit-scrollbar {
+    width: 10px;
+    background-color: #f9f9fd;
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: #18aaaa;
+}
+
+.tableContainer::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    background-color: #f9f9fd;
+}
+
+.link-to-index-page {
+    padding: 10px 20px;
+    background-color: #1bbaba;
+    color: #fff;
+    font-size: 1rem;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: bold;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+.link-to-index-page:hover {
+    background-color: #008181;
+}
+
+header{
+    display:flex;
+    height: 40px;
+    justify-content: left;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+}
