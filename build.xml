@@ -92,10 +92,10 @@
     <target name="compile" depends="download-deps">
         <mkdir dir="${classes.dir}"/>
 
-        <javac  srcdir="${src.dir}" 
-                destdir="${classes.dir}" 
-                includeantruntime="false"
-                encoding="UTF-8"
+        <javac srcdir="${src.dir}"
+               destdir="${classes.dir}"
+               includeantruntime="false"
+               encoding="UTF-8"
                debug="true"
                fork="true">
             <classpath refid="compile.classpath"/>
@@ -112,17 +112,46 @@
 
     </target>
 
+    <!-- Воспроизведение случайного звука -->
+    <target name="play-sound">
+        <!-- Случайным образом выбрать звук (1.mp3...22.mp3) -->
+        <exec executable="powershell" osfamily="windows" outputproperty="track.number">
+            <arg value="-Command"/>
+            <arg value="Get-Random -Minimum 1 -Maximum 22"/>
+        </exec>
+        <exec executable="sh" osfamily="unix" outputproperty="track.number">
+            <arg value="-c"/>
+            <arg value="shuf -i 1-21 -n 1"/>
+        </exec>
+        <property name="track.filename" value="sounds/${track.number}.mp3"/>
+        <!-- Воспроизвести полученный звук в фоне -->
+        <exec executable="cmd" osfamily="windows" spawn="true">
+            <arg value="/c"/>
+            <arg value="start"/>
+            <arg value="/b"/>
+            <arg value="${track.filename}"/>
+        </exec>
+        <exec executable="afplay" osfamily="mac" spawn="true">
+            <arg value="${track.filename}"/>
+        </exec>
+        <exec executable="mpg123" osfamily="unix" spawn="true">
+            <arg value="${track.filename}"/>
+        </exec>
+    </target>
+
+
     <!-- Сборка WAR -->
     <target name="build" depends="compile">
         <mkdir dir="${dist.dir}"/>
-        <war    destfile="${dist.dir}/${war.name}" 
-                webxml="${web.dir}/WEB-INF/web.xml"
-                needxmlfile="false">
+        <war destfile="${dist.dir}/${war.name}"
+             webxml="${web.dir}/WEB-INF/web.xml"
+             needxmlfile="false">
             <fileset dir="${web.dir}" excludes="WEB-INF/web.xml"/>
             <lib dir="${lib.dir}"/>
             <classes dir="${classes.dir}"/>
             <metainf dir="${classes.dir}/META-INF"/>
         </war>
+        <antcall target="play-sound"/>
     </target>
 
 
@@ -130,12 +159,12 @@
     <target name="test" depends="build,download-test-libs">
         <mkdir dir="${test.classes.dir}"/>
         <mkdir dir="${test.report.dir}"/>
-        
+
         <!-- Компиляция тестов -->
-        <javac  srcdir="${test.src.dir}" 
-                destdir="${test.classes.dir}" 
-                includeantruntime="false"
-                classpathref="test.classpath"/>
+        <javac srcdir="${test.src.dir}"
+               destdir="${test.classes.dir}"
+               includeantruntime="false"
+               classpathref="test.classpath"/>
 
         <!-- Проверка classpath перед запуском -->
         <!-- <pathconvert property="test.classpath.string" refid="test.classpath"/> -->
@@ -154,11 +183,11 @@
         </junitlauncher>
 
         <!-- Форматирование XML-отчетов с отступами -->
-        <xslt 
-            basedir="${test.report.dir}" 
-            destdir="${test.report.dir}" 
-            includes="TEST-*.xml" 
-            style="xsl/format.xsl"
+        <xslt
+                basedir="${test.report.dir}"
+                destdir="${test.report.dir}"
+                includes="TEST-*.xml"
+                style="xsl/format.xsl"
         />
 
         <!-- Удаление неотформатированного XML-отчета -->
@@ -167,7 +196,7 @@
 
     <!-- Остальные цели -->
     <target name="scp" depends="build">
-        <scp file="${dist.dir}/${war.name}" 
+        <scp file="${dist.dir}/${war.name}"
              todir="${scp.user}:${scp.password}@${scp.host}:${scp.remoteDir}"
              trust="yes"/>
     </target>
