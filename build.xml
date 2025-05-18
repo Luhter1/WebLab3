@@ -79,6 +79,7 @@
     <target name="clean">
         <delete dir="${classes.dir}"/>
         <delete dir="${test.classes.dir}"/>
+        <delete dir="${test.report.dir}"/>
         <delete dir="${dist.dir}"/>
     </target>
 
@@ -122,6 +123,46 @@
             <classes dir="${classes.dir}"/>
             <metainf dir="${classes.dir}/META-INF"/>
         </war>
+    </target>
+
+
+    <!-- Тестирование -->
+    <target name="test" depends="build,download-test-libs">
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${test.report.dir}"/>
+        
+        <!-- Компиляция тестов -->
+        <javac  srcdir="${test.src.dir}" 
+                destdir="${test.classes.dir}" 
+                includeantruntime="false"
+                classpathref="test.classpath"/>
+
+        <!-- Проверка classpath перед запуском -->
+        <!-- <pathconvert property="test.classpath.string" refid="test.classpath"/> -->
+        <!-- <echo message="Test Classpath: ${test.classpath.string}"/> -->
+
+        <junitlauncher printsummary="yes">
+            <classpath>
+                <path refid="test.classpath"/>
+                <pathelement path="${classes.dir}"/>
+                <pathelement path="${test.classes.dir}"/>
+            </classpath>
+            <testclasses outputdir="${test.report.dir}">
+                <fileset dir="${test.classes.dir}" includes="**/*Test.class"/>
+                <listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+            </testclasses>
+        </junitlauncher>
+
+        <!-- Форматирование XML-отчетов с отступами -->
+        <xslt 
+            basedir="${test.report.dir}" 
+            destdir="${test.report.dir}" 
+            includes="TEST-*.xml" 
+            style="xsl/format.xsl"
+        />
+
+        <!-- Удаление неотформатированного XML-отчета -->
+        <delete file="${test.report.dir}/TEST-AreaBeanTest.xml"/>
     </target>
 
     <!-- Остальные цели -->
