@@ -57,8 +57,8 @@
         <get src="https://repo1.maven.org/maven2/javax/servlet/jsp/jstl/jstl-api/1.2/jstl-api-1.2.jar"
              dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
 
-        <!-- org.glassfish.web:jstl-impl:1.2 -->
-        <get src="https://repo1.maven.org/maven2/org/glassfish/web/jstl-impl/1.2/jstl-impl-1.2.jar"
+        <!-- javax.ejb:javax.ejb-api:3.2.2 -->
+        <get src="https://repo1.maven.org/maven2/javax/ejb/javax.ejb-api/javax.ejb-api-3.2.2.jar"
              dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
 
         <!-- javax.faces:javax.faces-api:2.3 -->
@@ -93,25 +93,41 @@
 
         <javac  srcdir="${src.dir}" 
                 destdir="${classes.dir}" 
-                includeantruntime="false">
+                includeantruntime="false"
+                encoding="UTF-8"
+               debug="true"
+               fork="true">
             <classpath refid="compile.classpath"/>
+            <compilerarg line="-Xlint:unchecked -parameters"/>
         </javac>
+
+
+        <mkdir dir="${classes.dir}/META-INF"/>
+        <manifest file="${classes.dir}/META-INF/MANIFEST.MF" mode="update">
+            <attribute name="Manifest-Version" value="1.0.0"/>
+            <attribute name="Implementation-Version" value="1.0.0"/>
+            <attribute name="Main-Class" value="${main.class}"/>
+        </manifest>
+
     </target>
 
-    <!-- Сборка JAR -->
+    <!-- Сборка WAR -->
     <target name="build" depends="compile">
         <mkdir dir="${dist.dir}"/>
-        <jar destfile="${dist.dir}/${jar.name}" basedir="${classes.dir}">
-            <manifest>
-                <attribute name="Main-Class" value="${main.class}"/>
-                <attribute name="Version" value="${version}"/>
-            </manifest>
-        </jar>
+        <war    destfile="${dist.dir}/${war.name}" 
+                basedir="${classes.dir}"
+                webxml="${web.dir}/WEB-INF/web.xml"
+                needxmlfile="false">
+            <fileset dir="${web.dir}" excludes="WEB-INF/web.xml"/>
+            <lib dir="${lib.dir}"/>
+            <classes dir="${classes.dir}"/>
+            <metainf dir="${classes.dir}/META-INF"/>
+        </war>
     </target>
 
-    <!-- Остальные цели (примеры) -->
+    <!-- Остальные цели -->
     <target name="scp" depends="build">
-        <scp file="${dist.dir}/${jar.name}" 
+        <scp file="${dist.dir}/${war.name}" 
              todir="${scp.user}:${scp.password}@${scp.host}:${scp.remoteDir}"
              trust="yes"/>
     </target>
