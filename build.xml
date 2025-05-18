@@ -115,7 +115,6 @@
     <target name="build" depends="compile">
         <mkdir dir="${dist.dir}"/>
         <war    destfile="${dist.dir}/${war.name}" 
-                basedir="${classes.dir}"
                 webxml="${web.dir}/WEB-INF/web.xml"
                 needxmlfile="false">
             <fileset dir="${web.dir}" excludes="WEB-INF/web.xml"/>
