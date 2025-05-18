@@ -1,0 +1,127 @@
+<project name="Project Build" default="build" basedir=".">
+    <!-- Загрузка параметров -->
+    <property file="build.properties"/>
+
+    <!-- Пути для компиляции -->
+    <path id="compile.classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <!-- Пути для тестирования -->
+    <path id="test.classpath">
+        <path refid="compile.classpath"/>
+        <fileset dir="${lib.dir}">
+            <include name="junit-jupiter-api-${junit.version}.jar"/>
+            <include name="junit-jupiter-engine-${junit.version}.jar"/>
+            <include name="junit-platform-commons-${junit.platform.version}.jar"/>
+            <include name="junit-platform-engine-${junit.platform.version}.jar"/>
+            <include name="junit-platform-console-standalone-${junit.platform.version}.jar"/>
+            <include name="apiguardian-api-1.1.2.jar"/>
+            <include name="opentest4j-1.2.0.jar"/>
+        </fileset>
+        <pathelement location="${build.dir}/classes"/>
+        <pathelement location="${build.dir}/test-classes"/>
+    </path>
+
+    <!-- Загрузка пакетов для тестирования -->
+    <target name="download-test-libs">
+        <mkdir dir="${lib.dir}"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/${junit.version}/junit-jupiter-api-${junit.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-engine/${junit.version}/junit-jupiter-engine-${junit.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/${junit.platform.version}/junit-platform-commons-${junit.platform.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-engine/${junit.platform.version}/junit-platform-engine-${junit.platform.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/${junit.platform.version}/junit-platform-console-standalone-${junit.platform.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar"
+             dest="${lib.dir}" verbose="true"/>
+    </target>
+
+    <!-- Загрузка пакетов для компиляции -->
+    <target name="download-deps">
+        <mkdir dir="${lib.dir}/temp"/>
+        <!-- jakarta.platform:jakarta.jakartaee-api:9.1.0 -->
+        <get src="https://repo1.maven.org/maven2/jakarta/platform/jakarta.jakartaee-api/9.1.0/jakarta.jakartaee-api-9.1.0.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+
+        <!-- jakarta.servlet:jakarta.servlet-api:5.0.0 -->
+        <get src="https://repo1.maven.org/maven2/jakarta/servlet/jakarta.servlet-api/5.0.0/jakarta.servlet-api-5.0.0.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+
+        <!-- javax.servlet.jsp.jstl:jstl-api:1.2 -->
+        <get src="https://repo1.maven.org/maven2/javax/servlet/jsp/jstl/jstl-api/1.2/jstl-api-1.2.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+
+        <!-- org.glassfish.web:jstl-impl:1.2 -->
+        <get src="https://repo1.maven.org/maven2/org/glassfish/web/jstl-impl/1.2/jstl-impl-1.2.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+
+        <!-- javax.faces:javax.faces-api:2.3 -->
+        <get src="https://repo1.maven.org/maven2/javax/faces/javax.faces-api/2.3/javax.faces-api-2.3.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+
+        <!-- jakarta.enterprise:jakarta.enterprise.cdi-api:2.0.2 -->
+        <get src="https://repo1.maven.org/maven2/jakarta/enterprise/jakarta.enterprise.cdi-api/2.0.2/jakarta.enterprise.cdi-api-2.0.2.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+
+        <!-- org.postgresql:postgresql:42.7.4 -->
+        <get src="https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+
+        <copy todir="${lib.dir}">
+            <fileset dir="${lib.dir}/temp"/>
+        </copy>
+        <delete dir="${lib.dir}/temp"/>
+    </target>
+
+    <!-- Очистка -->
+    <target name="clean">
+        <delete dir="${classes.dir}"/>
+        <delete dir="${test.classes.dir}"/>
+        <delete dir="${dist.dir}"/>
+        <delete dir="${tmp.dir}"/>
+    </target>
+
+    <!-- Компиляция -->
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+
+        <javac  srcdir="${src.dir}" 
+                destdir="${classes.dir}" 
+                includeantruntime="false">
+            <classpath refid="compile.classpath"/>
+        </javac>
+    </target>
+
+    <!-- Сборка JAR -->
+    <target name="build" depends="compile">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.dir}/${jar.name}" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+                <attribute name="Version" value="${version}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- Остальные цели (примеры) -->
+    <target name="scp" depends="build">
+        <scp file="${dist.dir}/${jar.name}" 
+             todir="${scp.user}:${scp.password}@${scp.host}:${scp.remoteDir}"
+             trust="yes"/>
+    </target>
+
+    <target name="native2ascii">
+        <native2ascii src="${resources.dir}" dest="${n2a.dest}" includes="**/*.properties" encoding="UTF-8"/>
+    </target>
+
+    <target name="doc" depends="build">
+        <javadoc destdir="${javadoc.dir}" sourcepath="${src.dir}" packagenames="org.itmo.*"/>
+        <jar destfile="${dist.dir}/app-doc.jar" basedir="${javadoc.dir}"/>
+    </target>
+</project>

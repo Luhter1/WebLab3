@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 import javax.enterprise.event.Observes;
-import javax.ejb.SessionContext;
+import jakarta.ejb.SessionContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

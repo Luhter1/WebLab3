@@ -1,6 +1,6 @@
 FROM bitnami/wildfly:latest
 
-COPY ./app/build/libs/server.war /opt/bitnami/wildfly/standalone/deployments/ROOT.war
+COPY ./app/build/dist/server.war /opt/bitnami/wildfly/standalone/deployments/ROOT.war
 
 
 EXPOSE 8080 9990
