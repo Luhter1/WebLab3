@@ -1,4 +1,5 @@
-<project name="Project Build" default="build" basedir=".">
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="WebLab3" default="build" basedir=".">
     <!-- Загрузка параметров -->
     <property file="build.properties"/>
     <property file="scp.properties"/>
@@ -76,10 +77,9 @@
         <delete dir="${lib.dir}/temp"/>
     </target>
 
-    <!-- Очистка -->
-    <target name="clean">
+    <!-- Очистка сгенерированных файлов -->
+    <target name="clean-build">
         <delete dir="${classes.dir}"/>
-        <delete dir="${test.classes.dir}"/>
         <delete dir="${test.report.dir}"/>
         <delete dir="${dist.dir}"/>
     </target>
@@ -87,6 +87,12 @@
     <!-- Удаление библиотек -->
     <target name="clean-libs">
         <delete dir="${lib.dir}"/>
+    </target>
+
+    <!-- Удаление всех исходников -->
+    <target name="clean">
+        <antcall target="clean-libs"/>
+        <antcall target="clean-build"/>
     </target>
 
     <!-- Компиляция -->
@@ -202,6 +208,14 @@
              port="${scp.port}"
              trust="yes"/>
     </target>
+
+        <!-- Валидация XML -->
+    <target name="validate-xml">
+        <schemavalidate>
+            <fileset dir="." includes="**/*.xml" excludes="build.xml"/>
+        </schemavalidate>
+    </target>
+
 
 
     <!-- Остальные цели -->
