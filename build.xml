@@ -223,18 +223,38 @@
         <native2ascii src="${resources.dir}" dest="${n2a.dest}" includes="**/*.properties" encoding="UTF-8"/>
     </target>
 
+    <!-- Документация и хэши -->
     <target name="doc" depends="build">
-        <javadoc destdir="${javadoc.dir}" sourcepath="${src.dir}" packagenames="org.itmo.*"/>
-        <jar destfile="${dist.dir}/app-doc.jar" basedir="${javadoc.dir}"/>
+        <!-- Генерация Javadoc -->
+        <javadoc    destdir="${javadoc.dir}"
+                    sourcepath="${src.dir}"
+                    classpathref="compile.classpath"
+                    packagenames="*"
+                    use="true"
+                    author="true"
+                    version="true"
+                    doctitle="Lab3 API"/>
+
+        <!-- Генерация хэшей -->
+        <checksum file="${dist.dir}/${war.name}" algorithm="MD5"/>
+        <checksum file="${dist.dir}/${war.name}" algorithm="SHA-1"/>
+        <loadfile srcFile="${dist.dir}/${war.name}.MD5" property="md5.hash"/>
+        <loadfile srcFile="${dist.dir}/${war.name}.SHA-1" property="sha1.hash"/>
+
+        <!-- Обновление WAR с документацией в папке /docs -->
+        <war destfile="${dist.dir}/${war.name}" update="true">
+            <manifest>
+                <attribute name="MD5" value="${md5.hash}"/>
+                <attribute name="SHA-1" value="${sha1.hash}"/>
+            </manifest>
+            <zipfileset dir="${javadoc.dir}" prefix="javadoc/"/>
+        </war>
     </target>
 </project>
 
 <!-- 
-scp - перемещение собранного проекта по scp на выбранный сервер по завершению сборки. Предварительно необходимо выполнить сборку проекта (цель build)
-music - воспроизведение музыки по завершению сборки (цель build).
 native2ascii - преобразование native2ascii для копий файлов локализации (для тестирования сценария все строковые параметры необходимо вынести из классов в файлы локализации).
-xml - валидация всех xml-файлов в проекте.
-doc - добавление в MANIFEST.MF MD5 и SHA-1 файлов проекта, а также генерация и добавление в архив javadoc по всем классам проекта.
+
 report - в случае успешного прохождения тестов сохраняет отчет junit в формате xml, добавляет его в репозиторий svn и выполняет commit.
 alt - создаёт альтернативную версию программы с измененными именами переменных и классов (используя задание replace/replaceregexp в файлах параметров) и упаковывает её в jar-архив. Для создания jar-архива использует цель build.
 diff - осуществляет проверку состояния рабочей копии, и, если изменения касаются классов, указанных в файле параметров выполняет commit в репозиторий git.
