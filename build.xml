@@ -92,6 +92,7 @@
 
     <!-- Удаление всех исходников -->
     <target name="clean">
+        <delete dir="${svn.dir}"/>
         <antcall target="clean-libs"/>
         <antcall target="clean-build"/>
     </target>
@@ -193,7 +194,7 @@
         <!-- <pathconvert property="test.classpath.string" refid="test.classpath"/> -->
         <!-- <echo message="Test Classpath: ${test.classpath.string}"/> -->
 
-        <junitlauncher printsummary="yes">
+        <junitlauncher printsummary="yes" haltonfailure="true">
             <classpath>
                 <path refid="test.classpath"/>
                 <pathelement path="${classes.dir}"/>
@@ -205,6 +206,7 @@
             </testclasses>
         </junitlauncher>
 
+
         <!-- Форматирование XML-отчетов с отступами -->
         <xslt
                 basedir="${test.report.dir}"
@@ -212,9 +214,6 @@
                 includes="TEST-*.xml"
                 style="xsl/format.xsl"
         />
-
-        <!-- Удаление неотформатированного XML-отчета -->
-        <delete file="${test.report.dir}/TEST-AreaBeanTest.xml"/>
     </target>
 
     <!-- SCP -->
@@ -225,16 +224,12 @@
              trust="yes"/>
     </target>
 
-        <!-- Валидация XML -->
+    <!-- Валидация XML -->
     <target name="validate-xml">
         <schemavalidate>
             <fileset dir="." includes="**/*.xml" excludes="build.xml"/>
         </schemavalidate>
     </target>
-
-
-
-    <!-- Остальные цели -->
 
     <!-- Документация и хэши -->
     <target name="doc" depends="build">
@@ -262,6 +257,28 @@
             </manifest>
             <zipfileset dir="${javadoc.dir}" prefix="javadoc/"/>
         </war>
+    </target>
+
+    <target name="report" depends="test">
+        
+        <!-- Проверка успешности тестов -->
+        <echo message="Тесты успешно выполнены!"/>
+
+        <copy todir="${svn.work.dir}">
+            <fileset file="${test.report.dir}/*.xml"/>
+        </copy>
+
+        <exec executable="svn">
+            <arg value="add"/>
+            <arg value="${svn.work.dir}"/>
+            <arg value="--force"/>
+        </exec>
+        <exec executable="svn">
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="JUnit test report"/>
+            <arg value="${svn.work.dir}"/>
+        </exec>
     </target>
 </project>
 
