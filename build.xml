@@ -82,6 +82,7 @@
         <delete dir="${classes.dir}"/>
         <delete dir="${test.report.dir}"/>
         <delete dir="${dist.dir}"/>
+        <delete dir="${resources.dir}/resources-native"/>
     </target>
 
     <!-- Удаление библиотек -->
@@ -119,6 +120,21 @@
 
     </target>
 
+    <!-- Native2ASCII -->
+    <target name="native2ascii">
+        <delete dir="${resources.dir}/resources-native"/>
+        <mkdir dir="${resources.dir}/resources-native"/>
+
+        <native2ascii src="${resources.dir}"
+                      dest="${resources.dir}/resources-native"
+                      includes="**/*.properties"
+                      encoding="UTF-8"/>
+
+        <copy todir="${classes.dir}" preservelastmodified="true">
+            <fileset dir="${resources.dir}/resources-native" includes="**/*.properties"/>
+        </copy>
+    </target>
+
     <!-- Воспроизведение случайного звука -->
     <target name="play-sound">
         <!-- Случайным образом выбрать звук (1.mp3...22.mp3) -->
@@ -148,7 +164,7 @@
 
 
     <!-- Сборка WAR -->
-    <target name="build" depends="compile">
+    <target name="build" depends="compile,native2ascii">
         <mkdir dir="${dist.dir}"/>
         <war destfile="${dist.dir}/${war.name}"
              webxml="${web.dir}/WEB-INF/web.xml"
@@ -219,9 +235,6 @@
 
 
     <!-- Остальные цели -->
-    <target name="native2ascii">
-        <native2ascii src="${resources.dir}" dest="${n2a.dest}" includes="**/*.properties" encoding="UTF-8"/>
-    </target>
 
     <!-- Документация и хэши -->
     <target name="doc" depends="build">
@@ -253,8 +266,6 @@
 </project>
 
 <!-- 
-native2ascii - преобразование native2ascii для копий файлов локализации (для тестирования сценария все строковые параметры необходимо вынести из классов в файлы локализации).
-
 report - в случае успешного прохождения тестов сохраняет отчет junit в формате xml, добавляет его в репозиторий svn и выполняет commit.
 alt - создаёт альтернативную версию программы с измененными именами переменных и классов (используя задание replace/replaceregexp в файлах параметров) и упаковывает её в jar-архив. Для создания jar-архива использует цель build.
 diff - осуществляет проверку состояния рабочей копии, и, если изменения касаются классов, указанных в файле параметров выполняет commit в репозиторий git.
