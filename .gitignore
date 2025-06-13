@@ -1,0 +1,7 @@
+build
+build/*
+.code
+.idea
+.env
+.venv
+
