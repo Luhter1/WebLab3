@@ -21,8 +21,8 @@ import javax.management.ObjectName;
 import org.itmo.manageBean.DBManager;
 import org.itmo.manageBean.AreaChecker;
 import org.itmo.manageBean.ValidatePoint;
-import org.itmo.manageBean.MissPercentageBean;
-import org.itmo.manageBean.PointCounterBean;
+import org.itmo.manageBean.MissPercentage;
+import org.itmo.manageBean.PointCounter;
 import org.itmo.model.Point;
 
 import java.sql.*;
@@ -36,7 +36,7 @@ import java.sql.*;
 @SessionScoped
 public class MakePoint implements Serializable {
 
-    private transient PointCounterBean shotStats;
+    private transient PointCounter shotStats;
 
     /**
      * Unique session identifier generated using UUID
@@ -56,7 +56,7 @@ public class MakePoint implements Serializable {
     /**
      * Radius value for area checking
      */
-    private double r;
+    private double r = 1;
 
     /**
      * Sets the X coordinate.
@@ -124,8 +124,8 @@ public class MakePoint implements Serializable {
         try {
             MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
-            shotStats = new PointCounterBean();
-            MissPercentageBean missRatio = new MissPercentageBean(shotStats);
+            shotStats = new PointCounter();
+            MissPercentage missRatio = new MissPercentage(shotStats);
 
             ObjectName shotStatsName = new ObjectName("ru.ackey:type=ShotStats");
             ObjectName missRatioName = new ObjectName("ru.ackey:type=MissRatio");

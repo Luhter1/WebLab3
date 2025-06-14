@@ -15,19 +15,3 @@ services:
       POSTGRES_DB: mydb
     networks:
       - it-mo
-
-
-  wildfly:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        JAVA_VERSION: ${JAVA_VERSION}
-        BUILD_TOOL_ARGS: ${BUILD_TOOL_ARGS}
-    ports:
-      - "8080:8080"
-      - "9990:9990"
-    depends_on:
-      - postgres
-    networks:
-      - it-mo

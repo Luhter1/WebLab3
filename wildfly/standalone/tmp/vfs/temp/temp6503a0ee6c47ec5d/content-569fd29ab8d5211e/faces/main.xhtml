@@ -1,0 +1,102 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, user-scalable=no,
+         initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>#{loc.main_page}</title>
+    <f:loadBundle basename="messages" var="loc"/>
+    <link rel="icon" href="https://se.ifmo.ru/o/helios-theme/images/favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="../static/css/main.css" media="screen"/>
+</h:head>
+
+<h:body>
+    <header>
+        <h:link styleClass="link-to-index-page" value="#{loc.title_page}" outcome="index"/>
+    </header>
+    <h:form>
+        <main>
+            <div class="variables">
+                <label for="form"> Variables</label>
+                <div class="form" id="form">
+                    <label for="xVar">
+                        <p>X</p>
+                        <h:selectOneMenu required="true" id="xVar" class="xVar" onchange="setX();">
+                            <f:selectItem itemValue="-2" itemLabel="-2"/>
+                            <f:selectItem itemValue="-1.5" itemLabel="-1.5"/>
+                            <f:selectItem itemValue="-1" itemLabel="-1"/>
+                            <f:selectItem itemValue="-0.5" itemLabel="-0.5"/>
+                            <f:selectItem itemValue="0" itemLabel="0"/>
+                            <f:selectItem itemValue="0.5" itemLabel="0.5"/>
+                            <f:selectItem itemValue="1" itemLabel="1"/>
+                            <f:selectItem itemValue="1.5" itemLabel="1.5"/>
+                            <f:selectItem itemValue="2" itemLabel="2"/>
+                            <f:selectItem itemValue="2.5" itemLabel="2.5"/>
+                            <f:selectItem itemValue="3" itemLabel="3"/>
+                            <f:selectItem itemValue="3.5" itemLabel="3.5"/>
+                            <f:selectItem itemValue="4" itemLabel="4"/>
+                            <f:selectItem itemValue="4.5" itemLabel="4.5"/>
+                            <f:selectItem itemValue="5" itemLabel="5"/>
+                        </h:selectOneMenu>
+                        <h:inputText style="display: none;" id="x" class="x" value="#{makePoint.x}" required="true"/>
+                    </label>
+                    <label for="yVar">
+                        <p>Y</p>
+                        <h:inputText id="yVar" class="yVar" value="#{makePoint.y}" required="true"/>
+                    </label>
+                    <label for="rValue">
+                        <p>R</p>
+                        <h:selectOneRadio value="#{makePoint.r}" required="true" id="rValue" class="rVar"
+                                          onchange="processButtons();">
+                            <f:selectItem itemValue="1" itemLabel="1"/>
+                            <f:selectItem itemValue="2" itemLabel="2"/>
+                            <f:selectItem itemValue="3" itemLabel="3"/>
+                            <f:selectItem itemValue="4" itemLabel="4"/>
+                            <f:selectItem itemValue="5" itemLabel="5"/>
+                        </h:selectOneRadio>
+                    </label>
+                    <h:commandButton value="#{loc.submit}" action="#{makePoint.submit()}" class="submitButton">
+                        <f:ajax render="table" execute="@form"/>
+                    </h:commandButton>
+                </div>
+            </div>
+            <div class="greatCanvas">
+                <div class="canvasContainer">
+                    <canvas width="400" height="400" id="canvas"></canvas>
+                    <canvas width="400" height="400" id="pointsCanvas"></canvas>
+                </div>
+            </div>
+        </main>
+    </h:form>
+    <footer>
+        <div class="tableContainer" id="tableContainer">
+            <h:dataTable value="#{makePoint.getPoints()}" var="point" id="table" styleClass="tableCorner"
+                         update="@form">
+                <h:column>
+                    <f:facet name="header">X</f:facet>
+                    #{point.getX()}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Y</f:facet>
+                    #{point.getY()}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">R</f:facet>
+                    #{point.getR()}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">#{loc.table_hit}?</f:facet>
+                    <h:outputText value="#{point.GetIsHit() ? loc.hit : loc.miss}"
+                                  style="color: #{point.GetIsHit() ? 'green' : 'red'}"/>
+                </h:column>
+            </h:dataTable>
+        </div>
+        <status class="status">
+        </status>
+    </footer>
+    <script src="../static/js/canvas.js"></script>
+    <script src="../static/js/main_valid.js"></script>
+</h:body>
+</html>

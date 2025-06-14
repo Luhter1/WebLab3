@@ -18,7 +18,7 @@ public class DBManager {
     /**
      * Database connection URL for PostgreSQL
      */
-    private static final String URL_NAME = "jdbc:postgresql://postgres:5432/mydb";
+    private static final String URL_NAME = "jdbc:postgresql://localhost:5432/mydb";
 
     /**
      * Establishes and returns a database connection.
