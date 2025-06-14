@@ -2,21 +2,27 @@ package org.itmo.controller;
 
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.SessionContext;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.UUID;
+import java.lang.management.ManagementFactory;
 
 import javax.enterprise.event.Observes;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.itmo.manageBean.DBManager;
 import org.itmo.manageBean.AreaChecker;
 import org.itmo.manageBean.ValidatePoint;
+import org.itmo.manageBean.MissPercentageBean;
+import org.itmo.manageBean.PointCounterBean;
 import org.itmo.model.Point;
 
 import java.sql.*;
@@ -29,6 +35,9 @@ import java.sql.*;
 @Named("makePoint")
 @SessionScoped
 public class MakePoint implements Serializable {
+
+    private transient PointCounterBean shotStats;
+
     /**
      * Unique session identifier generated using UUID
      */
@@ -45,9 +54,9 @@ public class MakePoint implements Serializable {
     private double y;
 
     /**
-     * Radius value for area checking, default is 1
+     * Radius value for area checking
      */
-    private double r = 1;
+    private double r;
 
     /**
      * Sets the X coordinate.
@@ -103,13 +112,48 @@ public class MakePoint implements Serializable {
         return r;
     }
 
+
+    @PostConstruct
+    public void init() {
+        x = 0;
+        y = 0;
+        r = 1;
+
+
+        // Регистрация MBeans
+        try {
+            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+
+            shotStats = new PointCounterBean();
+            MissPercentageBean missRatio = new MissPercentageBean(shotStats);
+
+            ObjectName shotStatsName = new ObjectName("ru.ackey:type=ShotStats");
+            ObjectName missRatioName = new ObjectName("ru.ackey:type=MissRatio");
+
+            if (!mbs.isRegistered(shotStatsName)) {
+                mbs.registerMBean(shotStats, shotStatsName);
+            }
+            if (!mbs.isRegistered(missRatioName)) {
+                mbs.registerMBean(missRatio, missRatioName);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     /**
      * Validates and submits the current point to the database.
      * Only valid points that pass validation are stored.
      */
     public void submit() {
         if (ValidatePoint.IsValid(x, y, r)) {
-            DBManager.insertPointIntoTable(id, x, y, r, AreaChecker.IsHit(x, y, r));
+
+            boolean isHit = AreaChecker.IsHit(x, y, r);
+            if (shotStats != null) {
+                shotStats.registerShot(isHit);
+            }
+            DBManager.insertPointIntoTable(id, x, y, r, isHit);
         }
     }
 
