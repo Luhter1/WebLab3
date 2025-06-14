@@ -9,7 +9,7 @@ submitButton.addEventListener('click', () => {
 });
 
 // нажатие на график
-canvas.addEventListener('click', function (event) {;
+canvas.addEventListener('click', function (event) {
     let selectedValue = document.querySelector('input[type="radio"]:checked').value;
     if (!selectedValue || !checkR(parseFloat(selectedValue))) {
         printError("Выберите радиус!");

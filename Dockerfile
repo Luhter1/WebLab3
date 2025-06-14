@@ -1,7 +1,19 @@
+ARG JAVA_VERSION=17
+ARG BUILD_TOOL_ARGS=""
+
+FROM openjdk:${JAVA_VERSION}-jdk-slim AS builder
+
+RUN apt-get update && apt-get install -y ant && apt-get install -y mpg123 && apt-get install -y python3
+
+WORKDIR /server
+
+COPY . /server
+
+RUN ant -Djdk.args="${BUILD_TOOL_ARGS}" build
+
 FROM bitnami/wildfly:latest
 
-COPY ./app/build/libs/server.war /opt/bitnami/wildfly/standalone/deployments/ROOT.war
-
+COPY --from=builder /server/app/build/dist/server.war /opt/bitnami/wildfly/standalone/deployments/ROOT.war
 
 EXPOSE 8080 9990
 

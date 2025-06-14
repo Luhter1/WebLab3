@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="WebLab3" default="build" basedir=".">
+    <!-- LOAD PARAMS & PATHS -->
+    <property file="build.properties"/>
+    <property environment="env"/>
+    <path id="compile.classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+    <path id="test.classpath">
+        <path refid="compile.classpath"/>
+        <fileset dir="${lib.dir}">
+            <include name="junit-jupiter-api-${junit.version}.jar"/>
+            <include name="junit-jupiter-engine-${junit.version}.jar"/>
+            <include name="junit-platform-commons-${junit.platform.version}.jar"/>
+            <include name="junit-platform-engine-${junit.platform.version}.jar"/>
+            <include name="junit-platform-console-standalone-${junit.platform.version}.jar"/>
+            <include name="apiguardian-api-1.1.2.jar"/>
+            <include name="opentest4j-1.2.0.jar"/>
+        </fileset>
+        <pathelement location="${build.dir}/classes"/>
+        <pathelement location="${build.dir}/test-classes"/>
+    </path>
+
+    <!-- T: LOAD PACKAGES -->
+    <target name="download-deps">
+        <mkdir dir="${lib.dir}/temp"/>
+        <!-- jakarta.platform:jakarta.jakartaee-api:9.1.0 -->
+        <get src="https://repo1.maven.org/maven2/jakarta/platform/jakarta.jakartaee-api/9.1.0/jakarta.jakartaee-api-9.1.0.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+        <!-- jakarta.servlet:jakarta.servlet-api:5.0.0 -->
+        <get src="https://repo1.maven.org/maven2/jakarta/servlet/jakarta.servlet-api/5.0.0/jakarta.servlet-api-5.0.0.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+        <!-- javax.servlet.jsp.jstl:jstl-api:1.2 -->
+        <get src="https://repo1.maven.org/maven2/javax/servlet/jsp/jstl/jstl-api/1.2/jstl-api-1.2.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+        <!-- javax.faces:javax.faces-api:2.3 -->
+        <get src="https://repo1.maven.org/maven2/javax/faces/javax.faces-api/2.3/javax.faces-api-2.3.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+        <!-- jakarta.enterprise:jakarta.enterprise.cdi-api:2.0.2 -->
+        <get src="https://repo1.maven.org/maven2/jakarta/enterprise/jakarta.enterprise.cdi-api/2.0.2/jakarta.enterprise.cdi-api-2.0.2.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+        <!-- org.postgresql:postgresql:42.7.4 -->
+        <get src="https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar"
+             dest="${lib.dir}/temp" verbose="true" usetimestamp="true"/>
+        <copy todir="${lib.dir}">
+            <fileset dir="${lib.dir}/temp"/>
+        </copy>
+        <delete dir="${lib.dir}/temp"/>
+    </target>
+
+    <!-- T: LOAD PACKAGES FOR TESTING -->
+    <target name="download-test-libs">
+        <mkdir dir="${lib.dir}"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/${junit.version}/junit-jupiter-api-${junit.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-engine/${junit.version}/junit-jupiter-engine-${junit.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/${junit.platform.version}/junit-platform-commons-${junit.platform.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-engine/${junit.platform.version}/junit-platform-engine-${junit.platform.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/${junit.platform.version}/junit-platform-console-standalone-${junit.platform.version}.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar"
+             dest="${lib.dir}" verbose="true"/>
+        <get src="https://repo1.maven.org/maven2/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar"
+             dest="${lib.dir}" verbose="true"/>
+    </target>
+
+    <!-- T: DELETE GENERATED FILES -->
+    <target name="clean-build">
+        <delete dir="${classes.dir}"/>
+        <delete dir="${test.report.dir}"/>
+        <delete dir="${dist.dir}"/>
+        <delete dir="${team.dir}"/>
+        <delete dir="${javadoc.dir}"/>
+        <delete dir="${resources.dir}/resources-native"/>
+    </target>
+
+    <!-- T: DELETE PACKAGES -->
+    <target name="clean-libs">
+        <delete dir="${lib.dir}"/>
+    </target>
+
+    <!-- T: GENERATED FILES, PACKAGES & SVN HISTORY -->
+    <target name="clean">
+        <delete dir="${svn.dir}"/>
+        <delete dir="${main.dir.alt}"/>
+        <antcall target="clean-libs"/>
+        <antcall target="clean-build"/>
+        <delete file="diff_output.txt"/>
+    </target>
+
+    <!-- T: COMPILATION -->
+    <target name="compile" depends="clean-build,download-deps">
+        <!-- step 1: compile classes from src.dir to classes.dir -->
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}"
+               destdir="${classes.dir}"
+               includeantruntime="false"
+               encoding="UTF-8"
+               debug="true"
+               fork="true">
+            <classpath refid="compile.classpath"/>
+        </javac>
+        <!-- step 2: create manifest -->
+        <mkdir dir="${classes.dir}/META-INF"/>
+        <manifest file="${classes.dir}/META-INF/MANIFEST.MF" mode="update">
+            <attribute name="Manifest-Version" value="1.0.0"/>
+            <attribute name="Implementation-Version" value="1.0.0"/>
+            <attribute name="Main-Class" value="${main.class}"/>
+        </manifest>
+    </target>
+
+    <!-- T: CONVERT PROPERTIES WITH native2ascii -->
+    <target name="native2ascii">
+        <delete dir="${resources.dir}/resources-native"/>
+        <mkdir dir="${resources.dir}/resources-native"/>
+        <apply executable="python3" dest="${resources.dir}/resources-native">
+            <fileset dir="${resources.dir}" includes="**/*.properties"/>
+            <arg value="resources/native2ascii.py"/>
+            <srcfile/>
+            <targetfile/>
+            <mapper type="identity"/>
+        </apply>
+        <copy todir="${classes.dir}">
+            <fileset dir="${resources.dir}/resources-native" includes="**/*.properties"/>
+        </copy>
+    </target>
+
+    <!-- T: BUILD .WAR -->
+    <target name="build" depends="compile,native2ascii">
+        <mkdir dir="${dist.dir}"/>
+        <war destfile="${dist.dir}/${war.name}"
+             webxml="${web.dir}/WEB-INF/web.xml"
+             needxmlfile="false">
+            <fileset dir="${web.dir}" excludes="WEB-INF/web.xml"/>
+            <lib dir="${lib.dir}"/>
+            <classes dir="${classes.dir}"/>
+            <metainf dir="${classes.dir}/META-INF"/>
+        </war>
+    </target>
+
+    <!-- T: PUSH .WAR TO REMOTE SERVER (needs ant-jsch) -->
+    <target name="scp" depends="build">
+        <scp file="${dist.dir}/${war.name}"
+             todir="${env.HELIOS_LOGIN}@${scp.host}:${scp.remoteDir}/${env.HELIOS_LOGIN}"
+             port="${scp.port}"
+             password="${env.HELIOS_PW}"
+             trust="yes">
+            <additionalConfig key="PreferredAuthentications" value="password,keyboard-interactive"/>
+            <additionalConfig key="PubkeyAuthentication" value="no"/>
+            <additionalConfig key="StrictHostKeyChecking" value="no"/>
+        </scp>
+    </target>
+
+    <!-- T: VALIDATE ALL .XML FILES -->
+    <target name="validate-xml">
+        <exec executable="git" output="ignored-files.txt" failonerror="false">
+            <arg value="ls-files"/>
+            <arg value="--others"/>
+        </exec>
+        <schemavalidate>
+            <fileset dir="." includes="**/*.xml" excludesfile="ignored-files.txt"/>
+        </schemavalidate>
+        <delete file="ignored-files.txt"/>
+    </target>
+
+    <!-- T: DOC - ADD CHECKSUMS TO MANIFEST AND GENERATE JAVADOC -->
+    <target name="doc" depends="build">
+        <!-- step 1: generate javadoc -->
+        <javadoc sourcepath="${src.dir}"
+                 destdir="${javadoc.dir}"
+                 packagenames="*"
+                 classpathref="compile.classpath"
+                 use="true"
+                 author="true"
+                 version="true"
+                 windowtitle="WebLab3 API Documentation"
+                 doctitle="WebLab3 API Documentation"
+                 encoding="UTF-8"
+                 charset="UTF-8"
+                 docencoding="UTF-8"/>
+        <!-- step 2: css fix -->
+        <mkdir dir="${javadoc.dir}/resources/fonts"/>
+        <echo file="${javadoc.dir}/resources/fonts/dejavu.css">
+            /* Just an empty CSS file to prevent Javadoc Bug I Love Java Java Java Java Java */
+        </echo>
+        <!-- step 2: run using vite -->
+        <exec executable="npx" dir="${javadoc.dir}" spawn="true">
+            <arg value="vite"/>
+            <arg value="--port"/>
+            <arg value="6969"/>
+            <arg value="--strictPort"/>
+            <arg value="--logLevel"/>
+            <arg value="silent"/>
+            <arg value="--open"/>
+        </exec>
+        <echo>Javadoc runs using Vite on http://localhost:6969</echo>
+        <!-- step 3: run src&resources checksums -->
+        <checksum algorithm="MD5" totalproperty="md5.hash">
+            <fileset dir="${src.dir}" includes="**/*.java"/>
+        </checksum>
+        <checksum algorithm="SHA-1" totalproperty="sha1.hash">
+            <fileset dir="${src.dir}" includes="**/*.java"/>
+        </checksum>
+        <!-- step 4: update manifest and .WAR -->
+        <war destfile="${dist.dir}/${war.name}" update="true">
+            <manifest>
+                <attribute name="X-Project-MD5" value="${md5.hash}"/>
+                <attribute name="X-Project-SHA-1" value="${sha1.hash}"/>
+            </manifest>
+            <zipfileset dir="${javadoc.dir}" prefix="javadoc/"/>
+        </war>
+        <!-- step 5: remove temp files -->
+        <delete>
+            <fileset dir="${src.dir}" includes="**/*.MD5,**/*.SHA-1"/>
+        </delete>
+    </target>
+
+    <!-- T: STOP JAVADOC HOSTING -->
+    <target name="stop-javadoc">
+        <exec executable="cmd" osfamily="windows" failonerror="false">
+            <arg value="/c"/>
+            <arg value="taskkill /F /IM node.exe /FI &quot;WINDOWTITLE eq vite*&quot;"/>
+        </exec>
+        <exec executable="bash" osfamily="unix" failonerror="false">
+            <arg value="-c"/>
+            <arg value="pkill -f 'vite --port 6969' || true"/>
+        </exec>
+    </target>
+
+    <!-- T: Testing -->
+    <target name="test" depends="build,download-test-libs">
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${test.report.dir}"/>
+        <!-- step 1: tests compilation -->
+        <javac srcdir="${test.src.dir}"
+               destdir="${test.classes.dir}"
+               includeantruntime="false"
+               classpathref="test.classpath"/>
+        <junit printsummary="yes" haltonfailure="true" fork="yes">
+            <classpath>
+                <path refid="test.classpath"/>
+                <pathelement path="${classes.dir}"/>
+                <pathelement path="${test.classes.dir}"/>
+            </classpath>
+            <batchtest todir="${test.report.dir}">
+                <fileset dir="${test.classes.dir}" includes="**/*Test.class"/>
+                <formatter type="xml"/>
+                <formatter type="plain" usefile="false"/>
+            </batchtest>
+        </junit>
+        <!-- step 2: formatting XML reports with indents -->
+        <xslt basedir="${test.report.dir}"
+              destdir="${test.report.dir}"
+              includes="TEST-*.xml"
+              style="resources/format.xsl"/>
+    </target>
+
+    <!-- T: REPORT - SAVES JUNIT XML-REPORT AND COMMITS IT IN SVN REPO -->
+    <target name="report" depends="test">
+        <!-- step 1: Checking the success of the tests -->
+        <echo message="Tests passsed!"/>
+        <!-- step 2: Copy the report to svn repo -->
+        <copy todir="${svn.work.dir}">
+            <fileset file="${test.report.dir}/*.xml"/>
+        </copy>
+        <!-- step 3: add and commits to svn repo -->
+        <exec executable="svn">
+            <arg value="add"/>
+            <arg value="${svn.work.dir}"/>
+            <arg value="--force"/>
+        </exec>
+        <exec executable="svn">
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="JUnit test report"/>
+            <arg value="${svn.work.dir}"/>
+        </exec>
+    </target>
+
+    <!-- T: CHECK CHANGES & COMMIT IF IMPORTANT -->
+    <target name="diff">
+        <exec executable="git" outputproperty="git.diff.files">
+            <arg value="diff"/>
+            <arg value="--name-only"/>
+            <arg value="HEAD"/>
+        </exec>
+        <echo message="Changed files: ${git.diff.files}"/>
+        <condition property="critical.changes.detected">
+            <contains string="${git.diff.files}" substring="${diff.critical.classes}"/>
+        </condition>
+        <antcall target="diff-commit"/>
+    </target>
+    <!-- HELPER: COMMIT IF {critical.changes.detected} -->
+    <target name="diff-commit" if="critical.changes.detected">
+        <echo message="Are critical changes? ${critical.changes.detected}"/>
+        <exec executable="git">
+            <arg value="add"/>
+            <arg value="."/>
+        </exec>
+        <exec executable="git">
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="Auto-commit by Ant diff target"/>
+        </exec>
+        <echo message="Critical changes committed!"/>
+    </target>
+
+    <!-- T: GET 3 LAST REVS, BUILD & ZIP THEM -->
+    <target name="team">
+        <!-- step 1: get commit hashes -->
+        <exec executable="git" outputproperty="team.rev1">
+            <arg value="rev-parse"/>
+            <arg value="HEAD~2"/>
+        </exec>
+        <exec executable="git" outputproperty="team.rev2">
+            <arg value="rev-parse"/>
+            <arg value="HEAD~1"/>
+        </exec>
+        <exec executable="git" outputproperty="team.rev3">
+            <arg value="rev-parse"/>
+            <arg value="HEAD"/>
+        </exec>
+        <!-- step 2: build & copy -->
+        <exec executable="git">
+            <arg value="checkout"/>
+            <arg value="${team.rev1}"/>
+        </exec>
+        <antcall target="build"/>
+        <copy file="${dist.dir}/${war.name}" tofile="${team.dir}/1.war"/>
+        <exec executable="git">
+            <arg value="checkout"/>
+            <arg value="${team.rev2}"/>
+        </exec>
+        <antcall target="build"/>
+        <copy file="${dist.dir}/${war.name}" tofile="${team.dir}/2.war"/>
+        <exec executable="git">
+            <arg value="checkout"/>
+            <arg value="${team.rev3}"/>
+        </exec>
+        <antcall target="build"/>
+        <copy file="${dist.dir}/${war.name}" tofile="${team.dir}/3.war"/>
+        <!-- step 3: zip .war files -->
+        <zip destfile="${team.dir}/builds.zip">
+            <fileset dir="${team.dir}" includes="1.war"/>
+            <fileset dir="${team.dir}" includes="2.war"/>
+            <fileset dir="${team.dir}" includes="3.war"/>
+        </zip>
+        <!-- step 4: remove .war files -->
+        <delete>
+            <fileset dir="${team.dir}" includes="**/*.war"/>
+        </delete>
+    </target>
+
+    <!-- T: ALT - CHECK CHANGES & COMMIT -->
+    <target name="alt" depends="clean">
+        <!-- step 1: Copy files for alternative version -->
+        <delete dir="${main.dir.alt}"/>
+        <mkdir dir="${main.dir.alt}"/>
+        <copy todir="${main.dir.alt}">
+            <fileset dir="${main.dir}"/>
+        </copy>
+        <!-- step 2: Rename classes, vars and filenames by regex -->
+        <replaceregexp flags="g" match="${replace.regex.oldName}" replace="${replace.regex.newName}">
+            <fileset dir="${src.dir.alt}">
+                <include name="**/*.java"/>
+            </fileset>
+            <fileset dir="${web.dir.alt}">
+                <include name="**/*.xhtml"/>
+            </fileset>
+        </replaceregexp>
+        <move todir="${src.dir.alt}">
+            <fileset dir="${src.dir.alt}" includes="**/${replace.regex.oldName}.java"/>
+            <mapper type="regexp" from="^(.*)${replace.regex.oldName}(.*)$$" to="\1${replace.regex.newName}\2"/>
+        </move>
+        <!-- step 3: Build alternative version -->
+        <exec executable="ant">
+            <arg value="build"/>
+            <arg value="-Dmain.dir=${main.dir.alt}"/>
+        </exec>
+    </target>
+
+    <!-- T: ENV - Builds and runs the programme in alternative environments -->
+    <target name="env">
+        <!-- step 1: Docker verification -->
+        <available file="docker" property="docker.exists" filepath="${env.PATH}"/>
+        <fail unless="docker.exists" message="Docker не найден в PATH!"/>
+        <!-- step 3: Build and deploy in an alternative env -->
+        <exec executable="docker" dir="${basedir}" failonerror="false">
+            <arg value="compose"/>
+            <arg value="down"/>
+        </exec>
+        <exec executable="docker" dir="${basedir}" failonerror="true">
+            <arg value="compose"/>
+            <arg value="up"/>
+            <arg value="--build"/>
+            <arg value="-d"/>
+        </exec>
+    </target>
+
+    <!-- T: ENV-STOP - SWITCH OFF DOCKER CONTAINERS -->
+    <target name="env-stop">
+        <available file="docker" property="docker.exists" filepath="${env.PATH}"/>
+        <fail unless="docker.exists" message="Docker не найден в PATH!"/>
+        <exec executable="docker" dir="${basedir}" failonerror="false">
+            <arg value="compose"/>
+            <arg value="down"/>
+        </exec>
+    </target>
+    
+    <target name="init-antcontrib">
+        <get src="https://repo1.maven.org/maven2/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar"
+             dest="${lib.dir}/ant-contrib-1.0b3.jar"
+             verbose="true"
+             usetimestamp="true"/>
+        <taskdef resource="net/sf/antcontrib/antlib.xml"
+                 classpath="${lib.dir}/ant-contrib-1.0b3.jar"/>
+    </target>
+
+    <!-- T: HISTORY - REVERT UNTIL COMPILES -->
+    <target name="history" depends="init-antcontrib">
+        <exec executable="git" outputproperty="git.revision.last">
+            <arg line="rev-parse HEAD"/>
+        </exec>
+        <exec executable="git" outputproperty="git.revision.first">
+            <arg line="rev-list --max-parents=0 HEAD"/>
+        </exec>
+        <var name="git.revision.togo" unset="true"/>
+        <exec executable="git" outputproperty="git.revision.togo">
+            <arg line="rev-parse HEAD~1"/>
+        </exec>
+        <trycatch>
+            <try>
+                <antcall target="build"/>
+                <echo message="Compilation succeeded"/>
+                <sequential>
+                    <exec executable="git" outputproperty="diff_output">
+                        <arg line="diff ${git.revision.first} ${git.revision.togo}"/>
+                    </exec>
+                    <echo file="diff_output.txt" message="${diff_output}"/>
+                </sequential>
+            </try>
+            <catch>
+                <echo message="Project compilation failed!"/>
+                <echo message="Checkout revision: ${git.revision.togo}"/>
+                <exec executable="git">
+                    <arg line="reset --hard ${git.revision.togo}"/>
+                </exec>
+                <if>
+                    <equals arg1="${git.revision.togo}" arg2="${git.revision.first}"/>
+                    <then>
+                        <echo message="No more revisions to checkout"/>
+                    </then>
+                    <else>
+                        <runtarget target="history"/>
+                    </else>
+                </if>
+            </catch>
+        </trycatch>
+    </target>
+</project>

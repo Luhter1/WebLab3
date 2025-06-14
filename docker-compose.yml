@@ -21,6 +21,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        JAVA_VERSION: ${JAVA_VERSION}
+        BUILD_TOOL_ARGS: ${BUILD_TOOL_ARGS}
     ports:
       - "8080:8080"
       - "9990:9990"

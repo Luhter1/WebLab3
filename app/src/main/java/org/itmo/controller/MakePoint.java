@@ -2,13 +2,14 @@ package org.itmo.controller;
 
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
+import jakarta.ejb.SessionContext;
 
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.UUID;
 
 import javax.enterprise.event.Observes;
-import javax.ejb.SessionContext;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -20,48 +21,104 @@ import org.itmo.model.Point;
 
 import java.sql.*;
 
+/**
+ * Session-scoped controller for managing point creation and validation.
+ * Handles user input for point coordinates and radius, validates them,
+ * and stores valid points in the database.
+ */
 @Named("makePoint")
 @SessionScoped
 public class MakePoint implements Serializable {
+    /**
+     * Unique session identifier generated using UUID
+     */
     private final Long id = UUID.randomUUID().getMostSignificantBits();
-    private double x;
-    private double y;
-    private double r=1;
 
+    /**
+     * X coordinate of the point
+     */
+    private double x;
+
+    /**
+     * Y coordinate of the point
+     */
+    private double y;
+
+    /**
+     * Radius value for area checking, default is 1
+     */
+    private double r = 1;
+
+    /**
+     * Sets the X coordinate.
+     *
+     * @param x the X coordinate value
+     */
     public void setX(double x) {
         this.x = x;
     }
+
+    /**
+     * Sets the Y coordinate.
+     *
+     * @param y the Y coordinate value
+     */
     public void setY(double y) {
         this.y = y;
     }
+
+    /**
+     * Sets the radius value.
+     *
+     * @param r the radius value
+     */
     public void setR(double r) {
         this.r = r;
     }
 
-
+    /**
+     * Gets the X coordinate.
+     *
+     * @return the X coordinate value
+     */
     public double getX() {
         return x;
     }
+
+    /**
+     * Gets the Y coordinate.
+     *
+     * @return the Y coordinate value
+     */
     public double getY() {
         return y;
     }
-    public double getR(){
+
+    /**
+     * Gets the radius value.
+     *
+     * @return the radius value
+     */
+    public double getR() {
         return r;
     }
 
-
-    public void submit(){
-
-        if ( ValidatePoint.IsValid(x, y, r) ) {
-
-            DBManager.insertPointIntoTable( id, x, y, r, AreaChecker.IsHit(x, y, r) );
-
+    /**
+     * Validates and submits the current point to the database.
+     * Only valid points that pass validation are stored.
+     */
+    public void submit() {
+        if (ValidatePoint.IsValid(x, y, r)) {
+            DBManager.insertPointIntoTable(id, x, y, r, AreaChecker.IsHit(x, y, r));
         }
-
     }
 
+    /**
+     * Retrieves all points associated with this session.
+     *
+     * @return LinkedList of Point objects for this session
+     */
     public LinkedList<Point> getPoints() {
-        return DBManager.getPoints( id );
+        return DBManager.getPoints(id);
     }
-
 }
