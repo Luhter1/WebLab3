@@ -127,8 +127,8 @@ public class MakePoint implements Serializable {
             shotStats = new PointCounter();
             MissPercentage missRatio = new MissPercentage(shotStats);
 
-            ObjectName shotStatsName = new ObjectName("ru.ackey:type=ShotStats");
-            ObjectName missRatioName = new ObjectName("ru.ackey:type=MissRatio");
+            ObjectName shotStatsName = new ObjectName("org.itmo:type=ShotStats");
+            ObjectName missRatioName = new ObjectName("org.itmo:type=MissRatio");
 
             if (!mbs.isRegistered(shotStatsName)) {
                 mbs.registerMBean(shotStats, shotStatsName);
