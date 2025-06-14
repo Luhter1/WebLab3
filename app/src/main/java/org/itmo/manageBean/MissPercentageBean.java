@@ -12,7 +12,6 @@ public class MissPercentageBean extends NotificationBroadcasterSupport {
         this.shotStats = stats;
     }
 
-    @Override
     public double getMissRatio() {
         int total = shotStats.getTotalShots();
         if (total == 0) return 0.0;
